@@ -4,7 +4,7 @@ migration_tags:
   - HC Migrate CSV
 source:
   plugin: csv
-  path: modules/custom/hc_csv_migrate/sources/hc_csv_migrate_items.csv
+  path: modules/custom/hc_csv_migrate/sources/mn-passport-parks.csv
   ids: [ID]
 process:
   title: Park
