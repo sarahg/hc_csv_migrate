@@ -1,0 +1,6 @@
+{
+    "name": "sarahg/hc_csv_migrate",
+    "type": "drupal-module",
+    "description": "Drupal 9 migration module",
+    "license": "GPL-2.0+"
+}
