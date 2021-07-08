@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * Implements hook_uninstall()
+ */
+function hc_csv_migrate_uninstall() {
+  Drupal::configFactory()->getEditable('migrate_plus.migration.hc_csv_migrate_node')->delete();
+}

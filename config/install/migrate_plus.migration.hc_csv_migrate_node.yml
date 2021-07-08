@@ -1,0 +1,16 @@
+id: hc_csv_migrate_node
+label: HC CSV Migrate trail node
+migration_tags:
+  - HC Migrate CSV
+source:
+  plugin: csv
+  path: modules/custom/hc_csv_migrate/sources/hc_csv_migrate_items.csv
+  ids: [ID]
+process:
+  title: Park
+  field_mileage: Mileage
+  type:  
+    plugin: default_value
+    default_value: trail
+destination:
+  plugin: entity:node
