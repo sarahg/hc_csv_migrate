@@ -1,5 +1,52 @@
 <?php
 
+use Drupal\Component\Serialization\Json;
+
+/**
+ * Implements hook_update_N().
+ */
+function hc_csv_migrate_update_9001() {
+  $not_found = [];
+  $updated = 0;
+
+  $client = \Drupal::service('http_client_factory')->fromOptions([
+    'base_uri' => 'http://services.dnr.state.mn.us/api/',
+  ]);
+
+  $nids = \Drupal::entityQuery('node')->condition('type', 'trail')->execute();
+  $nodes = \Drupal\node\Entity\Node::loadMultiple($nids);
+
+  foreach ($nodes as $node) {
+    $title = $node->getTitle();
+    $response = $client->get('gazetteer/v1', [
+      'query' => [
+        'name' => $title,
+        'type' => 'stprk'
+      ]
+    ]);
+    $data = Json::decode($response->getBody());
+
+    if (isset($data['results'])) {
+      $park = $data['results'][0];
+      $node->set('field_coordinates', $park['bbox']['epsg:4326']);
+      $node->set('field_county', $park['county']);
+      $node->set('field_mndnr_id', $park['id']);
+      $node->save();
+      $updated++;
+    } else {
+      $not_found[] = $title;
+    }
+  }
+
+  $message = t('Updated %count nodes.', ['%count' => $updated]);
+  if (!empty($not_found)) {
+    $message .= '<p>' . t('Lookup failed for:');
+    $message .= implode('<br>', $not_found) . '</p>';
+  }
+
+  return $message;
+}
+
 /**
  * Implements hook_uninstall()
  */

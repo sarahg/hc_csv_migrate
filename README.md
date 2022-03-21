@@ -1,11 +1,12 @@
 INTRODUCTION
 ------------
 
-Migrate a spreadsheet Minnesota DNR [hiking club](https://www.dnr.state.mn.us/state_parks/clubs.html) trail data into Drupal.
+Migrates Minnesota DNR [hiking club](https://www.dnr.state.mn.us/state_parks/clubs.html) trail data into Drupal.
 
 #### Module Features
 
  - Facilitate a simple CSV migration into a node type "trail"
+ - Pull additional fields (Coordinates, county, park ID) from the MN DNR API
 
 REQUIREMENTS
 ------------
