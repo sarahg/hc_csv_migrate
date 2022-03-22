@@ -3,7 +3,7 @@
 use Drupal\Component\Serialization\Json;
 
 /**
- * Implements hook_update_N().
+ * Populate Trail fields with data from MN DNR's Gazatteer API.
  */
 function hc_csv_migrate_update_9001() {
   $not_found = [];
@@ -35,6 +35,53 @@ function hc_csv_migrate_update_9001() {
       $updated++;
     } else {
       $not_found[] = $title;
+    }
+  }
+
+  $message = t('Updated %count nodes.', ['%count' => $updated]);
+  if (!empty($not_found)) {
+    $message .= '<p>' . t('Lookup failed for:');
+    $message .= implode('<br>', $not_found) . '</p>';
+  }
+
+  return $message;
+}
+
+/**
+ * Update park coordinate fields with data from MN DNR's Maps API.
+ */
+function hc_csv_migrate_update_9002() {
+  $not_found = [];
+  $updated = 0;
+
+  $client = \Drupal::service('http_client_factory')->fromOptions([
+    'base_uri' => 'https://maps1.dnr.state.mn.us/cgi-bin/compass/',
+  ]);
+
+  $nids = \Drupal::entityQuery('node')->condition('type', 'trail')->execute();
+  $nodes = \Drupal\node\Entity\Node::loadMultiple($nids);
+
+  foreach ($nodes as $node) {
+    $park_id = $node->get('field_mndnr_id')->getString();
+
+    // Don't try a lookup without an ID.
+    if (!$park_id) {
+      $not_found[] = $node->getTitle();
+      continue;
+    }
+
+    $response = $client->get('feature_detail.cgi', [
+      'query' => [
+        'id' => strtolower($park_id)
+      ]
+    ]);
+    $data = Json::decode($response->getBody());
+
+    if ($data['status'] == "SUCCESS") {
+      $park = $data['result'];
+      $node->set('field_coordinates_point', $park['point']['epsg:4326']);
+      $node->save();
+      $updated++;
     }
   }
 
